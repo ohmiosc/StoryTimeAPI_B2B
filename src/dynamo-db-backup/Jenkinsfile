@@ -1,0 +1,48 @@
+def getWorkspace() {
+    pwd().replace("%2F", "_")
+}
+
+environment {
+    AWS_ACCESS_KEY = credentials('AWS_ACCESS_KEY')
+    AWS_SECRET_KEY = credentials('AWS_SECRET_KEY')
+    AWS_REGION = credentials('AWS_REGION')
+}
+
+try {
+  node('linux') {
+    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+      ws(getWorkspace()) {
+        workspace = pwd()
+
+        deleteDir()
+
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          extensions: scm.extensions + [[$class: 'CheckoutOption', timeout: 60], [$class: 'CloneOption', reference: '', timeout: 60]],
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
+
+        stash name: 'dynamo-db-backup', includes: "src/dynamo-db-backup/**/*"
+      }
+    }
+  }
+
+  stage('Build & Test') {
+        node('node') {
+          deleteDir()
+
+          unstash 'dynamo-db-backup'
+          sh "cd src/dynamo-db-backup && npm install && npm run test"
+          stash name: 'dynamo-db-backup', includes: "src/dynamo-db-backup/**/*"
+        }
+
+  }
+
+
+
+  slackSend channel: 'kantoo-ci', message: "*JSON Pages test success* ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>) 🚀", color: "good"
+} catch (e) {
+  slackSend channel: 'kantoo-ci', message: "*JSON Pages test failed* ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", color: "danger"
+  throw e
+}

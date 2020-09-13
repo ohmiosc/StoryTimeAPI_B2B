@@ -1,0 +1,60 @@
+[
+  {
+    "id": 1,
+    "type": "summary",
+    "created_at": "2020-02-19T14:52:30.941Z",
+    "updated_at": "2020-02-19T14:52:30.941Z",
+    "language": "PT",
+    "titles": null,
+    "titles_by_stars": [
+      {
+        "id": 1,
+        "stars": 0,
+        "titles": [
+          "Pratique mais",
+          "Tente novamente",
+          "Continue tentando"
+        ],
+        "created_at": "2020-02-19T14:53:16.692Z",
+        "updated_at": "2020-02-19T14:56:48.358Z",
+        "pop_up": 1
+      },
+      {
+        "id": 2,
+        "stars": 1,
+        "titles": [
+          "Continue praticando!",
+          "Incrível!",
+          "Muito bom!"
+        ],
+        "created_at": "2020-02-19T14:55:12.391Z",
+        "updated_at": "2020-02-19T14:56:48.358Z",
+        "pop_up": 1
+      },
+      {
+        "id": 3,
+        "stars": 2,
+        "titles": [
+          "Bom trabalho!",
+          "Sensacional!",
+          "Incrível!"
+        ],
+        "created_at": "2020-02-19T14:55:29.667Z",
+        "updated_at": "2020-02-19T14:56:48.358Z",
+        "pop_up": 1
+      },
+      {
+        "id": 4,
+        "stars": 3,
+        "titles": [
+          "Você é demais!",
+          "Fantástico!",
+          "Você é incrível! "
+        ],
+        "created_at": "2020-02-19T14:55:50.671Z",
+        "updated_at": "2020-02-19T14:56:48.358Z",
+        "pop_up": 1
+      }
+    ]
+  }
+]

@@ -1,0 +1,74 @@
+def getWorkspace() {
+    pwd().replace("%2F", "_")
+}
+
+environment {
+    AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    AWS_DEFAULT_REGION = credentials('AWS_DEFAULT_REGION')
+}
+
+try {
+  node('linux') {
+    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+      ws(getWorkspace()) {
+        workspace = pwd()
+
+        deleteDir()
+
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          extensions: scm.extensions + [[$class: 'CheckoutOption', timeout: 60], [$class: 'CloneOption', reference: '', timeout: 60]],
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
+
+        stash name: 'warmup', includes: "src/warmup-lambda-nodejs/**/*"
+      }
+    }
+  }
+
+  stage('Build') {
+     parallel(
+      'nodejs': {
+        node('node') {
+          deleteDir()
+
+          unstash 'warmup'
+
+          sh "cd src/warmup-lambda-nodejs && npm install --production"
+          zip zipFile: 'kantoo.api.warmup.zip', archive: false, dir: 'src/warmup-lambda-nodejs', glob: "index.js,node_modules/**/*"
+
+          archiveArtifacts artifacts: '*.zip', fingerprint: true
+
+          stash name: 'warmup_dist', includes: "kantoo.api.warmup.zip"
+        }
+      }
+    )
+  }
+
+  stage('Terraform') {
+    node('docker') {
+      wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+        deleteDir()
+
+        unstash 'warmup'
+
+        dir('src/warmup-lambda-nodejs') {
+            unstash 'warmup_dist'
+        }
+
+        docker
+          .image('hashicorp/terraform')
+          .withRun() { c->
+            sh 'cd ./src/warmup-lambda-nodejs/deployment && sudo chmod u+x deploy.sh && ./deploy.sh'
+          }
+      }
+    }
+  }
+
+  slackSend channel: 'kantoo-ci', message: "*Build success* ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>) 🚀", color: "good"
+} catch (e) {
+  slackSend channel: 'kantoo-ci', message: "*Build failed* ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", color: "danger"
+  throw e
+}

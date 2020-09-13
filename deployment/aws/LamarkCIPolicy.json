@@ -1,0 +1,81 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:TagResource",
+                "lambda:ListVersionsByFunction",
+                "dynamodb:ListTables",
+                "dynamodb:ListTagsOfResource",
+                "lambda:GetAccountSettings",
+                "lambda:GetFunctionConfiguration",
+                "lambda:CreateEventSourceMapping",
+                "lambda:UntagResource",
+                "lambda:PutFunctionConcurrency",
+                "dynamodb:TagResource",
+                "lambda:ListTags",
+                "dynamodb:DescribeTable",
+                "dynamodb:DescribeContinuousBackups",
+                "lambda:DeleteFunction",
+                "lambda:GetAlias",
+                "lambda:UpdateEventSourceMapping",
+                "lambda:ListFunctions",
+                "lambda:GetEventSourceMapping",
+                "apigateway:*",
+                "s3:*",
+                "sqs:*",
+                "lambda:GetFunction",
+                "lambda:ListAliases",
+                "dynamodb:ListBackups",
+                "lambda:UpdateFunctionConfiguration",
+                "dynamodb:UpdateItem",
+                "dynamodb:DescribeTimeToLive",
+                "lambda:UpdateAlias",
+                "dynamodb:CreateTable",
+                "lambda:UpdateFunctionCode",
+                "lambda:AddPermission",
+                "dynamodb:ListGlobalTables",
+                "lambda:ListEventSourceMappings",
+                "lambda:DeleteAlias",
+                "lambda:PublishVersion",
+                "lambda:RemovePermission",
+                "lambda:GetPolicy",
+                "dynamodb:UpdateTable",
+                "lambda:CreateAlias"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetRole",
+                "iam:ListInstanceProfilesForRole",
+                "iam:PassRole",
+                "iam:DetachRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:AttachRolePolicy"
+            ],
+            "Resource": "arn:aws:iam::*:role/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": ["s3:ListBucket"],
+            "Resource": ["arn:aws:s3:::dst.kantoo.bigdata"]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject"
+            ],
+            "Resource": ["arn:aws:s3:::dst.kantoo.bigdata/*"]
+        }
+
+    ]
+}

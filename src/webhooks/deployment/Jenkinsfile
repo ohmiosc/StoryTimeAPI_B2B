@@ -1,0 +1,93 @@
+def getWorkspace() {
+    pwd().replace("%2F", "_")
+}
+
+environment {
+    AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    AWS_DEFAULT_REGION = credentials('AWS_DEFAULT_REGION')
+    GOOGLE_AUTH_PRIVATE_KEY = credentials('GOOGLE_AUTH_PRIVATE_KEY')
+    GOOGLE_AUTH_CLIENT_EMAIL = credentials('GOOGLE_AUTH_CLIENT_EMAIL')
+
+}
+
+try {
+  node('linux') {
+    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+      ws(getWorkspace()) {
+        workspace = pwd()
+
+        deleteDir()
+
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          extensions: scm.extensions + [[$class: 'CheckoutOption', timeout: 60], [$class: 'CloneOption', reference: '', timeout: 60]],
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
+
+        stash name: 'webhooks', includes: "src/webhooks/**/*"
+      }
+    }
+  }
+
+  stage('Build') {
+    parallel(
+      'nodejs': {
+        node('node') {
+          deleteDir()
+
+          unstash 'webhooks'
+          sh "cd src/webhooks && npm install && npm run build"
+          sh "cd src/webhooks && rm -r node_modules && npm install --production"
+
+          zip zipFile: 'webhooks.zip', archive: false, dir: 'src/webhooks'
+
+          archiveArtifacts artifacts: '*.zip', fingerprint: true
+
+          stash name: 'webhooks_dist', includes: "webhooks.zip"
+        }
+      }
+    )
+  }
+
+  stage('Terraform') {
+    node('docker') {
+      wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+        deleteDir()
+
+        unstash 'webhooks_dist'
+
+
+        unzip zipFile: 'webhooks.zip', dir: 'src/webhooks', quiet: true
+        sh "mkdir src/webhooks/deploy"
+        sh "cp -r src/webhooks/dist src/webhooks/deploy"
+        sh "cp -r src/webhooks/node_modules src/webhooks/deploy"
+
+
+        sh 'ls -R'
+
+
+        docker
+          .image('hashicorp/terraform')
+          .withRun() { c->
+            sh 'cd ./src/webhooks/deployment && sudo chmod u+x deploy.sh && ./deploy.sh'
+          }
+      }
+    }
+  }
+
+  def testsFailed = false
+
+} catch (e) {
+  slackSend channel: 'kantoo-ci', message: "*Build failed* ${env.JOB_NAME} #${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)", color: "danger"
+  currentBuild.result = 'FAILURE'
+  throw e
+} finally {
+  if (env.TF_VAR_env_name == "prod" || env.TF_VAR_env_name == "qa") {
+    node {
+      println currentBuild.result  // this prints null
+      step([$class: 'Mailer', notifyEveryUnstableBuild: true, recipients: 'denysenkoa@mydigicode.com, sharon.s@la-mark.com, krupinay@mydigicode.com, uri.z@la-mark.com, tatyanach@mydigicode.com, victoria.s@la-mark.com', sendToIndividuals: true])
+    }
+  }
+}

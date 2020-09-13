@@ -1,0 +1,21 @@
+# IntellijIdea files
+*.iml
+.idea/
+
+.vscode/
+.terraform/
+.settings/
+out/
+bin/
+dest/
+node_modules/
+dist/
+
+.classpath
+.project
+
+*.jar
+*.tfstate
+*.tfstate.*
+
+template.yaml

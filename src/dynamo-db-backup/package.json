@@ -1,0 +1,14 @@
+{
+  "name": "dynamo-db-backup",
+  "version": "1.0.0",
+  "description": "Creates backups for DB Tables",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.478.0"
+  }
+}
