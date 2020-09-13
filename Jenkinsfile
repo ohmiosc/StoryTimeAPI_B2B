@@ -1,4 +1,7 @@
 #!/usr/bin/env groovy
+def getWorkspace() {
+    pwd().replace("%2F", "_")
+}
 pipeline {
   agent any
   parameters {
@@ -35,9 +38,6 @@ pipeline {
     disableConcurrentBuilds()
   }
 //
-def getWorkspace() {
-    pwd().replace("%2F", "_")
-}
 
 environment {
     AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
