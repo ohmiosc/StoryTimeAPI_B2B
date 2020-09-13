@@ -7,7 +7,29 @@ environment {
     AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
     AWS_DEFAULT_REGION = credentials('AWS_DEFAULT_REGION')
 }
+try {
+  node('linux') {
+    wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
+      ws(getWorkspace()) {
+        workspace = pwd()
 
+        deleteDir()
+
+        checkout([
+          $class: 'GitSCM',
+          branches: scm.branches,
+          extensions: scm.extensions + [[$class: 'CheckoutOption', timeout: 60], [$class: 'CloneOption', reference: '', timeout: 60]],
+          userRemoteConfigs: scm.userRemoteConfigs
+        ])
+
+        stash name: 'nodejs', includes: "src/aws-lambda-nodejs/**/*"
+        stash name: 'deployment', includes: "deployment/**/*"
+        stash name: 'client.api.tests', includes: "src/client-api-tests/**/*"
+        stash name: 'python', includes: "src/aws-lambda-python/**/*"
+
+      }
+    }
+  }
   stage('Build') {
      parallel(
       'nodejs': {
