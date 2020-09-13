@@ -9,7 +9,7 @@ environment {
     AWS_DEFAULT_REGION = credentials('AWS_DEFAULT_REGION')
 }
 try {
-  node('linux') {
+  node('master') {
     wrap([$class: 'AnsiColorBuildWrapper', 'colorMapName': 'XTerm', 'defaultFg': 1, 'defaultBg': 2]) {
       ws(getWorkspace()) {
         workspace = pwd()
