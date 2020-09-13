@@ -29,8 +29,7 @@ pipeline {
     text(name: 'MIN_SCALING',     defaultValue: '1',  description: 'Minimo de contenedores disponibles')
     text(name: 'MAX_SCALING',     defaultValue: '2',  description: 'Maximo de contenedores disponibles')
     text(name: 'HTTPS_PRIORITY',  defaultValue: '15', description: 'Prioridad de listener Https en el ALB: dev=43')
-  }
-}
+
   options {
     ansiColor('xterm')
     disableConcurrentBuilds()
@@ -111,5 +110,7 @@ try {
     node {
       println currentBuild.result  // this prints null
     }
+  }
+}
   }
 }
