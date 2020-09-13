@@ -1,42 +1,6 @@
-#!/usr/bin/env groovy
 def getWorkspace() {
     pwd().replace("%2F", "_")
 }
-pipeline {
-  agent any
-  parameters {
-    booleanParam(
-      name: 'REGISTRY',
-      defaultValue: false,
-      description: "Requiere construir o no Registry in ECR")
-    booleanParam(
-      name: 'CREATE_STACK',
-      defaultValue: false,
-      description: "Requiere construir o no el Stack")
-    booleanParam(
-      name: 'UPDATE_STACK',
-      defaultValue: false,
-      description: "Actualizar Stack")
-    choice(
-      name: 'MIGRATIONS',
-      choices: "false\nmigrate\nrollback",
-      description: "Indica si se ejecutaran migraciones de DB")
-    choice(
-      name: 'MEMORY_SIZE',
-      choices:"128\n256\n512\n768\n1024\n2048",
-      description: "Cantidad de memoria asignada al contenedor")
-    choice(
-      name: 'DESIRED_COUNT',
-      choices:"1\n2\n3\n4\n5\n10",
-      description: "Numero de instancias por incremento")
-    text(name: 'MIN_SCALING',     defaultValue: '1',  description: 'Minimo de contenedores disponibles')
-    text(name: 'MAX_SCALING',     defaultValue: '2',  description: 'Maximo de contenedores disponibles')
-    text(name: 'HTTPS_PRIORITY',  defaultValue: '15', description: 'Prioridad de listener Https en el ALB: dev=43')
-
-  options {
-    ansiColor('xterm')
-    disableConcurrentBuilds()
-  }
 //
 
 environment {
@@ -110,7 +74,5 @@ try {
     node {
       println currentBuild.result  // this prints null
     }
-  }
-}
   }
 }
