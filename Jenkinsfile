@@ -43,7 +43,7 @@ environment {
   }
 
   currentBuild.result = 'SUCCESS'
-} catch (e) {
+//} catch (e) {
   currentBuild.result = 'FAILURE'
   throw e
 } finally {
@@ -52,5 +52,4 @@ environment {
       println currentBuild.result  // this prints null
     }
   }
-}
 }
